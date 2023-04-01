@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 
-from tqdm import tqdm
+from tqdm import tqdm  # used to create progress bars for for-loops
 
 
 class CNN(nn.Module):
@@ -74,8 +74,9 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # train the network
 
+print("Training...")
 for epoch in range(num_epochs):
-    for batch_idx, (data, targets) in tqdm(enumerate(train_loader, 1)):
+    for batch_idx, (data, targets) in enumerate(tqdm(train_loader)):
         # send the data to cuda, if possible
         data = data.to(device)
         targets = targets.to(device)
@@ -91,6 +92,7 @@ for epoch in range(num_epochs):
         # Optimizer step
         optimizer.step()
 
+print("Done training, thankfully!")
 
 # check accuracy on  training and testing datasets to see model performance
 
@@ -105,7 +107,7 @@ def check_accuracy(loader, model):
     model.eval()
 
     with torch.no_grad():
-        for x, y in loader:
+        for x, y in tqdm(loader):
             x = x.to(device)
             y = y.to(device)
 
@@ -114,7 +116,7 @@ def check_accuracy(loader, model):
             num_correct += (predictions == y).sum()
             num_samples += predictions.size(0)
 
-        print(f"Got {num_correct} / {num_samples} with accuracy of {float(num_correct)/float(num_samples) * 100:.2f}")
+        print(f"Got {num_correct} / {num_samples} with accuracy of {float(num_correct)/float(num_samples) * 100:.2f}%")
 
     model.train()
 
