@@ -1,4 +1,5 @@
 """
+Exploring the use and fine-tuning of pretrained models offered by PyTorch
 
 by Anthony Givans (anthonygivans@miami.edu)
 """
