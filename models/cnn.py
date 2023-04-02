@@ -17,6 +17,7 @@ import torchvision.transforms as transforms
 from tqdm import tqdm  # used to create progress bars for for-loops
 
 file_name = os.path.basename(sys.argv[0]).split('.')[0]
+PATH = f"deeplearning/saved_models/{file_name}_model.pt"
 
 
 class CNN(nn.Module):
@@ -48,7 +49,7 @@ class CNN(nn.Module):
         return x
 
 
-def save_checkpoint(state: dict, file_name: str = f"saved_models/{file_name}_model.pt"):
+def save_checkpoint(state: dict, file_name: str = PATH):
     """
     Saves the model at a specified point in the training process
 
@@ -99,7 +100,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 if load_model:
-    load_checkpoint(torch.load(f"saved_models/{file_name}_model.pt"))
+    load_checkpoint(torch.load(PATH))
 
 # train the network
 print("Training...\n")
