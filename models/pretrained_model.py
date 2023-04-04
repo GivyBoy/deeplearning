@@ -28,9 +28,9 @@ batch_size = 64
 num_epochs = 5
 
 # Load Data
-train_dataset = datasets.CIFAR10(root="dataset/", train=True, transform=transforms.ToTensor(), download=True)
+train_dataset = datasets.CIFAR10(root="../datasets/", train=True, transform=transforms.ToTensor(), download=True)
 train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-test_dataset = datasets.CIFAR10(root="dataset/", train=False, transform=transforms.ToTensor(), download=True)
+test_dataset = datasets.CIFAR10(root="../datasets/", train=False, transform=transforms.ToTensor(), download=True)
 test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=True)
 
 
@@ -93,7 +93,7 @@ def check_accuracy(loader: DataLoader, model):
     """
     Function to check the accuracy of the trained model
 
-    :param loader: the dataset on which the model will be evaluated on
+    :param loader: the datasets on which the model will be evaluated on
     :param model: the model that you would like to evaluate
     :return: None
     """
