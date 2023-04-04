@@ -13,6 +13,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+torch.manual_seed(17)  # computers a (pseudo) random, so specifying a seed allows for reproducibility
 
 from tqdm import tqdm  # used to create progress bars for for-loops
 

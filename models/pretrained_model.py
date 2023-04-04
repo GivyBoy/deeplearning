@@ -4,15 +4,14 @@ Exploring the use and fine-tuning of pretrained models offered by PyTorch
 by Anthony Givans (anthonygivans@miami.edu)
 """
 
-import sys
 import torch
 import torch.nn as nn  # neural network modules
 import torch.optim as optim  # used for optimization libraries (SGD, Adam, etc)
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 import torchvision
+torch.manual_seed(17)  # computers a (pseudo) random, so specifying a seed allows for reproducibility
 
 from tqdm import tqdm  # used to create progress bars for for-loops
 
