@@ -20,24 +20,31 @@ class VGG(nn.Module):
         super(VGG, self).__init__()
         assert architecture in VGG_types.keys(), f"Not a valid architecture! Choose from: {list(VGG_types.keys())}"
         self.architecture = architecture
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.in_channels = in_channels
         self.num_classes = num_classes
-        self.conv_layers = self.create_conv_layers(architecture=VGG_types[self.architecture])
+        self.max_pool_counter = 0
+        self.shape_data_len = 0
+        self.shape_data_width = 0
+        self.conv_layers = self.create_conv_layers(architecture=VGG_types[self.architecture]).to(self.device)
+
         # use nn.Sequential to make the code more compact
-        self.fcs = nn.Sequential(
-            nn.Linear(512 * 7 * 7, 4096),  # assumes img is 224x224
-            nn.ReLU(),
-            nn.Dropout(p=0.5),
-            nn.Linear(4096, 4096),
-            nn.ReLU(),
-            nn.Dropout(p=0.5),
-            nn.Linear(4096, num_classes)
-        )
+        # self.fcs = nn.Sequential(
+        #     nn.Linear(512 * int(self.shape_data_len / 2 ** self.max_pool_counter) *
+        #               int(self.shape_data_width / 2 ** self.max_pool_counter), 4096),
+        #     nn.Dropout(p=0.5),
+        #     nn.Linear(4096, 4096),
+        #     nn.ReLU(),
+        #     nn.Dropout(p=0.5),
+        #     nn.Linear(4096, self.num_classes)
+        # )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        self.shape_data_len = x.shape[2]
+        self.shape_data_width = x.shape[-1]
         x = self.conv_layers(x)
         x = x.reshape(x.shape[0], -1)
-        x = self.fcs(x)
+        x = self.create_fcs_layers(self.shape_data_len, self.shape_data_width).to(self.device)(x)
 
         return x
 
@@ -66,12 +73,24 @@ class VGG(nn.Module):
                 """
                 in_channels = layer
             elif layer == 'M':
+                self.max_pool_counter += 1
                 layers.extend([nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))])
 
         return nn.Sequential(*layers)  # * unpacks the elements of the lists
 
+    def create_fcs_layers(self, length, width):
+        fcs_layers = [
+            nn.Linear(512 * int(length / 2 ** self.max_pool_counter) * int(width / 2 ** self.max_pool_counter), 4096),
+            nn.Dropout(p=0.5),
+            nn.Linear(4096, 4096),
+            nn.ReLU(),
+            nn.Dropout(p=0.5),
+            nn.Linear(4096, self.num_classes)]
+
+        return nn.Sequential(*fcs_layers)  # * unpacks the elements of the lists
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = VGG("VGG16", in_channels=3, num_classes=1000).to(device=device)
-x = torch.randn(1, 3, 224, 224).to(device=device)
+model = VGG("VGG16", in_channels=3, num_classes=1000).to(device)
+x = torch.randn(1, 3, 488, 488).to(device=device)
 print(model(x).shape)
