@@ -47,7 +47,8 @@ class UNet(nn.Module):
                                             )
 
         self.conv6 = self._make_conv_layer(in_channels=self.channels, out_channels=int(self.channels / 2),
-                                           kernel=kernel, stride=stride,)
+                                           kernel=kernel, stride=stride
+                                           )
         self.channels /= 2
         self.channels = int(self.channels)
 
@@ -153,7 +154,8 @@ class UNet(nn.Module):
         return layers
 
 
-test_data = torch.randn(1, 1, 572, 572)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+test_data = torch.randn(1, 1, 572, 572).to(device=device)
 
-model = UNet()
+model = UNet().to(device=device)
 print(f"model output: {model(test_data).shape}")
