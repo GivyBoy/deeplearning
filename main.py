@@ -3,6 +3,7 @@ import torch.nn as nn
 
 print(torch.cuda.is_available())  # Do we have a GPU? Should return True
 print(torch.cuda.device_count())
+print(torch.cuda.get_device_name())
 
 torch.manual_seed(17)  # computers a (pseudo) random, so specifying a seed allows for reproducibility
 
