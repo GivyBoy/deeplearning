@@ -8,14 +8,25 @@ import torch
 import torch.nn as nn  # nn modules
 
 
-class GooLeNet(nn.Module):
+class GoogLeNet(nn.Module):
     def __init__(self, in_channels=3, num_classes: int = 1000):
-        super(GooLeNet, self).__init__()
+        super(GoogLeNet, self).__init__()
 
-        self.conv1 = ConvBlock(in_channels=in_channels, out_channels=64, kernel_size=(7, 7),
-                               stride=(2, 2), padding=(3, 3))
+        self.conv1 = ConvBlock(
+            in_channels=in_channels,
+            out_channels=64,
+            kernel_size=(7, 7),
+            stride=(2, 2),
+            padding=(3, 3),
+        )
         self.max_pool1 = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.conv2 = ConvBlock(in_channels=64, out_channels=192, kernel_size=3, stride=1, padding=1)
+        self.conv2 = ConvBlock(
+            in_channels=64,
+            out_channels=192,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+        )
         self.max_pool2 = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         # order for inception block: in_channels, out_1x1, red_3x3, out_3x3, red_5x5, out_5x5, out_1x1_pool
@@ -61,38 +72,60 @@ class GooLeNet(nn.Module):
         x = x.reshape(x.shape[0], -1)
         x = self.dropout(x)
         x = self.fc1(x)
-
         return x
 
 
 class InceptionBlock(nn.Module):
-    def __init__(self,
-                 in_channels: int,
-                 out_1x1: int,
-                 red_3x3: int,
-                 out_3x3: int,
-                 red_5x5: int,
-                 out_5x5: int,
-                 out_1x1_pool: int
-                 ):
-
+    def __init__(
+        self,
+        in_channels: int,
+        out_1x1: int,
+        red_3x3: int,
+        out_3x3: int,
+        red_5x5: int,
+        out_5x5: int,
+        out_1x1_pool: int,
+    ):
         super(InceptionBlock, self).__init__()
         self.branch1 = ConvBlock(in_channels=in_channels, out_channels=out_1x1, kernel_size=1)
         self.branch2 = nn.Sequential(
             ConvBlock(in_channels=in_channels, out_channels=red_3x3, kernel_size=1),
-            ConvBlock(in_channels=red_3x3, out_channels=out_3x3, kernel_size=3, stride=1, padding=1),
+            ConvBlock(
+                in_channels=red_3x3,
+                out_channels=out_3x3,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+            ),
         )
         self.branch3 = nn.Sequential(
             ConvBlock(in_channels=in_channels, out_channels=red_5x5, kernel_size=1),
-            ConvBlock(in_channels=red_5x5, out_channels=out_5x5, kernel_size=5, padding=2)
+            ConvBlock(
+                in_channels=red_5x5,
+                out_channels=out_5x5,
+                kernel_size=5,
+                padding=2,
+            ),
         )
         self.branch4 = nn.Sequential(
             nn.MaxPool2d(kernel_size=3, stride=1, padding=1),
-            ConvBlock(in_channels=in_channels, out_channels=out_1x1_pool, kernel_size=1)
+            ConvBlock(
+                in_channels=in_channels,
+                out_channels=out_1x1_pool,
+                kernel_size=1,
+            ),
         )
 
     def forward(self, x):
-        return torch.cat([self.branch1(x), self.branch2(x), self.branch3(x), self.branch4(x)], 1)
+        return torch.cat(
+            [
+                self.branch1(x),
+                self.branch2(x),
+                self.branch3(x),
+                self.branch4(x),
+            ],
+            1,
+        )
 
 
 class ConvBlock(nn.Module):
@@ -110,5 +143,5 @@ class ConvBlock(nn.Module):
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     x = torch.randn(3, 3, 224, 224).to(device)
-    model = GooLeNet(in_channels=3, num_classes=1000).to(device)
+    model = GoogLeNet(in_channels=3, num_classes=1000).to(device)
     print(model(x).shape)

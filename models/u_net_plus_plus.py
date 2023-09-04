@@ -10,103 +10,156 @@ import torchvision.transforms.functional as fn
 
 
 class UNet_pp(nn.Module):
-    def __init__(self, in_channels: int = 1, out_channels: int = 64, kernel: int = 3, stride: int = 1,
-                 num_classes: int = 2):
+    def __init__(
+        self,
+        in_channels: int = 1,
+        out_channels: int = 64,
+        kernel: int = 3,
+        stride: int = 1,
+        num_classes: int = 2,
+    ):
         super(UNet_pp, self).__init__()
 
         self.channels = out_channels
         self.pool = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
         self.relu = nn.ReLU()
 
-        self.conv1 = self._make_conv_layer(in_channels=in_channels, out_channels=out_channels, kernel=kernel,
-                                           stride=stride
-                                           )
+        self.conv1 = self._make_conv_layer(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel=kernel,
+            stride=stride,
+        )
 
-        self.conv2 = self._make_conv_layer(in_channels=self.channels, out_channels=self.channels * 2, kernel=kernel,
-                                           stride=stride
-                                           )
+        self.conv2 = self._make_conv_layer(
+            in_channels=self.channels,
+            out_channels=self.channels * 2,
+            kernel=kernel,
+            stride=stride,
+        )
         self.channels *= 2
 
-        self.conv2_upsample = nn.ConvTranspose2d(in_channels=self.channels, out_channels=int(self.channels / 2),
-                                                 kernel_size=(2, 2), stride=2
-                                                 )
+        self.conv2_upsample = nn.ConvTranspose2d(
+            in_channels=self.channels,
+            out_channels=int(self.channels / 2),
+            kernel_size=(2, 2),
+            stride=2,
+        )
 
-        self.conv3 = self._make_conv_layer(in_channels=self.channels, out_channels=self.channels * 2, kernel=kernel,
-                                           stride=stride
-                                           )
+        self.conv3 = self._make_conv_layer(
+            in_channels=self.channels,
+            out_channels=self.channels * 2,
+            kernel=kernel,
+            stride=stride,
+        )
         self.channels *= 2
 
-        self.conv3_upsample = nn.ConvTranspose2d(in_channels=self.channels, out_channels=int(self.channels / 2),
-                                                 kernel_size=(2, 2), stride=2
-                                                 )
+        self.conv3_upsample = nn.ConvTranspose2d(
+            in_channels=self.channels,
+            out_channels=int(self.channels / 2),
+            kernel_size=(2, 2),
+            stride=2,
+        )
 
-        self.conv4 = self._make_conv_layer(in_channels=self.channels, out_channels=self.channels * 2, kernel=kernel,
-                                           stride=stride
-                                           )
+        self.conv4 = self._make_conv_layer(
+            in_channels=self.channels,
+            out_channels=self.channels * 2,
+            kernel=kernel,
+            stride=stride,
+        )
         self.channels *= 2
 
-        self.conv4_upsample = nn.ConvTranspose2d(in_channels=self.channels, out_channels=int(self.channels / 2),
-                                                 kernel_size=(2, 2), stride=2
-                                                 )
+        self.conv4_upsample = nn.ConvTranspose2d(
+            in_channels=self.channels,
+            out_channels=int(self.channels / 2),
+            kernel_size=(2, 2),
+            stride=2,
+        )
 
-        self.conv5 = self._make_conv_layer(in_channels=self.channels, out_channels=self.channels * 2, kernel=kernel,
-                                           stride=stride
-                                           )
+        self.conv5 = self._make_conv_layer(
+            in_channels=self.channels,
+            out_channels=self.channels * 2,
+            kernel=kernel,
+            stride=stride,
+        )
         self.channels *= 2
 
-        self.upsample1 = nn.ConvTranspose2d(in_channels=self.channels, out_channels=int(self.channels / 2),
-                                            kernel_size=(2, 2), stride=2
-                                            )
+        self.upsample1 = nn.ConvTranspose2d(
+            in_channels=self.channels,
+            out_channels=int(self.channels / 2),
+            kernel_size=(2, 2),
+            stride=2,
+        )
 
-        self.conv6 = self._make_conv_layer(in_channels=self.channels, out_channels=int(self.channels / 2),
-                                           kernel=kernel, stride=stride
-                                           )
+        self.conv6 = self._make_conv_layer(
+            in_channels=self.channels,
+            out_channels=int(self.channels / 2),
+            kernel=kernel,
+            stride=stride,
+        )
         self.channels /= 2
         self.channels = int(self.channels)
 
-        self.upsample2 = nn.ConvTranspose2d(in_channels=self.channels, out_channels=int(self.channels / 2),
-                                            kernel_size=(2, 2), stride=2
-                                            )
+        self.upsample2 = nn.ConvTranspose2d(
+            in_channels=self.channels,
+            out_channels=int(self.channels / 2),
+            kernel_size=(2, 2),
+            stride=2,
+        )
 
-        self.conv7 = self._make_conv_layer(in_channels=self.channels*2, out_channels=int(self.channels / 2),
-                                           kernel=kernel, stride=stride
-                                           )
+        self.conv7 = self._make_conv_layer(
+            in_channels=self.channels * 2,
+            out_channels=int(self.channels / 2),
+            kernel=kernel,
+            stride=stride,
+        )
         self.channels /= 2
         self.channels = int(self.channels)
 
-        self.upsample3 = nn.ConvTranspose2d(in_channels=self.channels, out_channels=int(self.channels / 2),
-                                            kernel_size=(2, 2), stride=2
-                                            )
+        self.upsample3 = nn.ConvTranspose2d(
+            in_channels=self.channels,
+            out_channels=int(self.channels / 2),
+            kernel_size=(2, 2),
+            stride=2,
+        )
 
-        self.conv8 = self._make_conv_layer(in_channels=1152, out_channels=int(self.channels / 2),
-                                           kernel=kernel, stride=stride
-                                           )
+        self.conv8 = self._make_conv_layer(
+            in_channels=1152,
+            out_channels=int(self.channels / 2),
+            kernel=kernel,
+            stride=stride,
+        )
         self.channels /= 2
         self.channels = int(self.channels)
 
-        self.upsample4 = nn.ConvTranspose2d(in_channels=self.channels, out_channels=int(self.channels / 2),
-                                            kernel_size=(2, 2), stride=2
-                                            )
+        self.upsample4 = nn.ConvTranspose2d(
+            in_channels=self.channels,
+            out_channels=int(self.channels / 2),
+            kernel_size=(2, 2),
+            stride=2,
+        )
 
-        self.conv9 = self._make_conv_layer(in_channels=1216, out_channels=int(self.channels / 2),
-                                           kernel=kernel, stride=stride
-                                           )
+        self.conv9 = self._make_conv_layer(
+            in_channels=1216,
+            out_channels=int(self.channels / 2),
+            kernel=kernel,
+            stride=stride,
+        )
 
         self.channels /= 2
         self.channels = int(self.channels)
 
-        self.conv10 = nn.Conv2d(in_channels=self.channels, out_channels=num_classes, kernel_size=(1, 1), stride=(1, 1))
+        self.conv10 = nn.Conv2d(
+            in_channels=self.channels,
+            out_channels=num_classes,
+            kernel_size=(1, 1),
+            stride=(1, 1),
+        )
 
         # ---- Auxiliary upsamples??
-        self.conv2_1_upsample = nn.ConvTranspose2d(in_channels=512, out_channels=256,
-                                                   kernel_size=(2, 2), stride=2
-                                                   )
-        self.conv1_1_upsample = nn.ConvTranspose2d(in_channels=256, out_channels=128,
-                                                   kernel_size=(2, 2), stride=2
-                                                   )
-        self.conv1_2_upsample = nn.ConvTranspose2d(in_channels=640, out_channels=128,
-                                                   kernel_size=(2, 2), stride=2
-                                                   )
+        self.conv2_1_upsample = nn.ConvTranspose2d(in_channels=512, out_channels=256, kernel_size=(2, 2), stride=2)
+        self.conv1_1_upsample = nn.ConvTranspose2d(in_channels=256, out_channels=128, kernel_size=(2, 2), stride=2)
+        self.conv1_2_upsample = nn.ConvTranspose2d(in_channels=640, out_channels=128, kernel_size=(2, 2), stride=2)
 
     def forward(self, x):
         conv0_0 = self.conv1(x)
@@ -180,10 +233,20 @@ class UNet_pp(nn.Module):
 
     def _make_conv_layer(self, in_channels: int, out_channels: int, kernel: int, stride: int):
         layers = nn.Sequential(
-            nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=(kernel, kernel),
-                      stride=(stride, stride), padding=(0, 0)),
-            nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=(kernel, kernel),
-                      stride=(stride, stride), padding=(0, 0))
+            nn.Conv2d(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=(kernel, kernel),
+                stride=(stride, stride),
+                padding=(0, 0),
+            ),
+            nn.Conv2d(
+                in_channels=out_channels,
+                out_channels=out_channels,
+                kernel_size=(kernel, kernel),
+                stride=(stride, stride),
+                padding=(0, 0),
+            ),
         )
         return layers
 

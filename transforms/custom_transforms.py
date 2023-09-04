@@ -1,18 +1,20 @@
-__author__ = "Gorkem Can Ates", "Anthony Givans"
+__author__ = ["Gorkem Can Ates", "Anthony Givans"]
 
-__email__ = "gca45@miami.edu", "agg136@miami.edu"
+__email__ = ["gca45@miami.edu", "agg136@miami.edu"]
 
-from PIL import Image, ImageOps, ImageEnhance
-from PIL import ImageFilter as IF
-from typing import Any
-import numpy as np
-import torchvision.transforms.functional as TF
-import torch
-import cv2
-import scipy.ndimage as ndimage
-import torchvision.transforms as transforms
 import random
+from typing import Any
+
+import cv2
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy.ndimage as ndimage
+import torch
+import torchvision.transforms as transforms
+import torchvision.transforms.functional as TF
+from PIL import Image, ImageEnhance
+from PIL import ImageFilter as IF
+from PIL import ImageOps
 
 
 def plot(d):
@@ -32,41 +34,47 @@ class Compose:
 
 
 class Resize:
-    def __init__(self, shape: tuple, mode='torch', multi_dim=False) -> None:
+    def __init__(self, shape: tuple, mode="torch", multi_dim=False) -> None:
         self.shape = shape
         self.mode = mode
         self.multi_dim = multi_dim
 
     def __call__(self, data, target) -> Any:
-        if self.mode == 'torch':
-            data, target = TF.resize(data, self.shape, interpolation=Image.BICUBIC), \
-                TF.resize(target, self.shape, interpolation=Image.NEAREST)
-        elif self.mode == 'cv2':
+        if self.mode == "torch":
+            data, target = TF.resize(data, self.shape, interpolation=Image.BICUBIC), TF.resize(
+                target, self.shape, interpolation=Image.NEAREST
+            )
+        elif self.mode == "cv2":
             if self.multi_dim:
                 data = self.resample_3d(data, self.shape)
                 target = self.resample_3d(target, self.shape)
             else:
-                data = cv2.resize(data,
-                                  self.shape,
-                                  interpolation=cv2.INTER_CUBIC)
-                target = cv2.resize(target,
-                                    self.shape,
-                                    interpolation=cv2.INTER_NEAREST)
+                data = cv2.resize(data, self.shape, interpolation=cv2.INTER_CUBIC)
+                target = cv2.resize(target, self.shape, interpolation=cv2.INTER_NEAREST)
         else:
-            raise Exception('Transform mode not found.')
+            raise Exception("Transform mode not found.")
         return data, target
 
     def resample_3d(self, img, target_size):
         imx, imy, imz = img.shape
         tx, ty, tz = target_size
-        zoom_ratio = (float(tx) / float(imx), float(ty) / float(imy), float(tz) / float(imz))
+        zoom_ratio = (
+            float(tx) / float(imx),
+            float(ty) / float(imy),
+            float(tz) / float(imz),
+        )
         img_resampled = ndimage.zoom(img, zoom_ratio, order=0, prefilter=False)
         return img_resampled
 
 
 class RandomRotation:
-
-    def __init__(self, angles: tuple((int, int)) = (-60, 60), p=0.5, mode='torch', multi_dim=False) -> None:
+    def __init__(
+        self,
+        angles: tuple((int, int)) = (-60, 60),
+        p=0.5,
+        mode="torch",
+        multi_dim=False,
+    ) -> None:
         self.angles = angles
         self.p = p
         self.mode = mode
@@ -75,17 +83,38 @@ class RandomRotation:
     def __call__(self, data, target):
         if random.random() <= self.p:
             angle = random.randint(self.angles[0], self.angles[1])
-            if self.mode == 'torch':
+            if self.mode == "torch":
                 data, target = TF.rotate(data, angle), TF.rotate(target, angle)
-            elif self.mode == 'cv2':
+            elif self.mode == "cv2":
                 if self.multi_dim:
                     data_i, target_i = [], []
                     for i in range(data.shape[2]):
-                        Md = cv2.getRotationMatrix2D((data[..., i].shape[0] / 2, data[..., i].shape[1] / 2), angle, 1)
-                        Mt = cv2.getRotationMatrix2D((target[..., i].shape[0] / 2, target[..., i].shape[1] / 2), angle,
-                                                     1)
-                        d = cv2.warpAffine(data[..., i], Md, (data[..., i].shape[0], data[..., i].shape[1]))
-                        t = cv2.warpAffine(target[..., i], Mt, (target[..., i].shape[0], target[..., i].shape[1]))
+                        Md = cv2.getRotationMatrix2D(
+                            (
+                                data[..., i].shape[0] / 2,
+                                data[..., i].shape[1] / 2,
+                            ),
+                            angle,
+                            1,
+                        )
+                        Mt = cv2.getRotationMatrix2D(
+                            (
+                                target[..., i].shape[0] / 2,
+                                target[..., i].shape[1] / 2,
+                            ),
+                            angle,
+                            1,
+                        )
+                        d = cv2.warpAffine(
+                            data[..., i],
+                            Md,
+                            (data[..., i].shape[0], data[..., i].shape[1]),
+                        )
+                        t = cv2.warpAffine(
+                            target[..., i],
+                            Mt,
+                            (target[..., i].shape[0], target[..., i].shape[1]),
+                        )
                         data_i.append(np.expand_dims(d, axis=2))
                         target_i.append(np.expand_dims(t, axis=2))
                         data, target = np.concatenate(data_i, axis=-1), np.concatenate(target_i, axis=-1)
@@ -95,21 +124,21 @@ class RandomRotation:
                     data = cv2.warpAffine(data, Md, (data.shape[0], data.shape[1]))
                     target = cv2.warpAffine(target, Mt, (target.shape[0], target.shape[1]))
             else:
-                raise Exception('Transform mode not found.')
+                raise Exception("Transform mode not found.")
         return data, target
 
 
 class RandomHorizontalFlip:
-    def __init__(self, p=0.5, mode='torch', multi_dim=False) -> None:
+    def __init__(self, p=0.5, mode="torch", multi_dim=False) -> None:
         self.p = p
         self.mode = mode
         self.multi_dim = multi_dim
 
     def __call__(self, data, target):
         if random.random() <= self.p:
-            if self.mode == 'torch':
+            if self.mode == "torch":
                 data, target = TF.hflip(data), TF.hflip(target)
-            elif self.mode == 'cv2':
+            elif self.mode == "cv2":
                 if self.multi_dim:
                     data_i, target_i = [], []
                     for i in range(data.shape[2]):
@@ -120,22 +149,21 @@ class RandomHorizontalFlip:
                 else:
                     data, target = cv2.flip(data, 1), cv2.flip(target, 1)
             else:
-                raise Exception('Transform mode not found.')
+                raise Exception("Transform mode not found.")
         return data, target
 
 
 class RandomVerticalFlip:
-
-    def __init__(self, p=0.5, mode='torch', multi_dim=False) -> None:
+    def __init__(self, p=0.5, mode="torch", multi_dim=False) -> None:
         self.p = p
         self.mode = mode
         self.multi_dim = multi_dim
 
     def __call__(self, data, target):
         if random.random() <= self.p:
-            if self.mode == 'torch':
+            if self.mode == "torch":
                 data, target = TF.vflip(data), TF.vflip(target)
-            elif self.mode == 'cv2':
+            elif self.mode == "cv2":
                 if self.multi_dim:
                     data_i, target_i = [], []
                     for i in range(data.shape[2]):
@@ -146,29 +174,27 @@ class RandomVerticalFlip:
                 else:
                     data, target = cv2.flip(data, 0), cv2.flip(target, 0)
             else:
-                raise Exception('Transform mode not found.')
+                raise Exception("Transform mode not found.")
         return data, target
 
 
 class GrayScale:
-    def __init__(self, p=0.5, mode='torch', multi_dim=False) -> None:
+    def __init__(self, p=0.5, mode="torch", multi_dim=False) -> None:
         self.p = p
         self.mode = mode
         self.multi_dim = multi_dim
 
     def __call__(self, data, target) -> Any:
         if random.random() <= self.p:
-            if self.mode == 'torch':
+            if self.mode == "torch":
                 # data = TF.to_grayscale(data, num_output_channels=3)
                 # target = TF.to_grayscale(target, num_output_channels=3)
 
                 data = ImageOps.grayscale(data)
                 target = ImageOps.grayscale(target)
 
-            elif self.mode == 'cv2':
-
+            elif self.mode == "cv2":
                 if self.multi_dim:
-
                     data_i, target_i = [], []
 
                     for i in range(data.shape[2]):
@@ -201,13 +227,19 @@ class GrayScale:
                 """
 
             else:
-                raise Exception('Transform mode not found.')
+                raise Exception("Transform mode not found.")
 
         return data, target
 
 
 class GaussianBlur:
-    def __init__(self, kernel_size: list[(int, int)] = [11, 11], p=0.5, mode='torch', multi_dim=False) -> None:
+    def __init__(
+        self,
+        kernel_size: list[(int, int)] = [11, 11],
+        p=0.5,
+        mode="torch",
+        multi_dim=False,
+    ) -> None:
         self.kernel_size = kernel_size
         self.p = p
         self.mode = mode
@@ -215,34 +247,31 @@ class GaussianBlur:
 
     def __call__(self, data, target) -> Any:
         if random.random() <= self.p:
-            if self.mode == 'torch':
-
+            if self.mode == "torch":
                 data = data.filter(IF.GaussianBlur(radius=5))
                 target = target.filter(IF.GaussianBlur(radius=5))
 
-            elif self.mode == 'cv2':
-
+            elif self.mode == "cv2":
                 if self.multi_dim:
-
                     data_i, target_i = [], []
 
                     for i in range(data.shape[2]):
-                        d, t = cv2.GaussianBlur(data[..., i], self.kernel_size, 6), \
-                            cv2.GaussianBlur(target[..., i], self.kernel_size, 6)
+                        d, t = cv2.GaussianBlur(data[..., i], self.kernel_size, 6), cv2.GaussianBlur(
+                            target[..., i], self.kernel_size, 6
+                        )
 
                         data_i.append(np.expand_dims(d, axis=2))
                         target_i.append(np.expand_dims(t, axis=2))
                         data, target = np.concatenate(data_i, axis=-1), np.concatenate(target_i, axis=-1)
 
                 else:
-
                     # data = ndimage.gaussian_filter(data, sigma=6)
                     # target = ndimage.gaussian_filter(target, sigma=6)
 
                     data = cv2.GaussianBlur(data, self.kernel_size, 6)
                     target = cv2.GaussianBlur(target, self.kernel_size, 6)
             else:
-                raise Exception('Transform mode not found.')
+                raise Exception("Transform mode not found.")
 
         return data, target
 
@@ -291,14 +320,14 @@ class Equalize:
             elif self.mode == "cv2":
                 """
                 We have to split the image in its channels and equalize them individually, then merge them after
-                
+
                 This implementation produces a near identical img to the ImageOps above
                 """
                 data = self._equalize(data)
                 target = self._equalize(target)
 
             else:
-                raise Exception('Transform mode not found.')
+                raise Exception("Transform mode not found.")
 
         return data, target
 
@@ -319,18 +348,17 @@ class Mirror:
 
     def __call__(self, data, target):
         if random.random() <= self.p:
-
             if self.mode == "torch":
                 data = ImageOps.mirror(data)
                 target = ImageOps.mirror(target)
 
             elif self.mode == "cv2":
-                " can also use `np.fliplr(img)` "
+                "can also use `np.fliplr(img)`"
                 data = cv2.flip(data, 1)
                 target = cv2.flip(target, 1)
 
             else:
-                raise Exception('Transform mode not found.')
+                raise Exception("Transform mode not found.")
 
         return data, target
 
@@ -342,40 +370,36 @@ class Sharpen:
 
     def __call__(self, data, target):
         if random.random() <= self.p:
-
             if self.mode == "torch":
                 data = ImageEnhance.Sharpness(data).enhance(8)  # val of 8 is similar to the sharper kernels below
                 target = ImageEnhance.Sharpness(target).enhance(8)
 
             elif self.mode == "cv2":
-
                 """
-                Below is the kernel used for image sharpening, found here: 
+                Below is the kernel used for image sharpening, found here:
                 https://en.wikipedia.org/wiki/Kernel_(image_processing). I have seen people reference different kernels
                 though, for eg:
-                
+
                 kernel = np.array([[0, -1, 0], # wikipedia version
                                    [-1, 5, -1],
                                    [0, -1, 0]])
-                
+
                 kernel = np.array([[-1, -1, -1], # sharper than the wikipedia kernel above
                                    [-1, 8, -1],
                                    [-1, -1, 0]])
-                                   
+
                 kernel = np.array([[-1, -1, -1], # similar to the kernel above (maybe a bit sharper)
                                    [-1, 9, -1],
                                    [-1, -1, -1]])
-                
+
                 """
-                kernel = np.array([[-1, -1, -1],
-                                   [-1, 9, -1],
-                                   [-1, -1, -1]])
+                kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
 
                 data = cv2.filter2D(data, ddepth=-1, kernel=kernel)
                 target = cv2.filter2D(target, ddepth=-1, kernel=kernel)
 
             else:
-                raise Exception('Transform mode not found.')
+                raise Exception("Transform mode not found.")
 
         return data, target
 
@@ -387,7 +411,6 @@ class Invert:
 
     def __call__(self, data, target):
         if random.random() <= self.p:
-
             if self.mode == "torch":
                 data = ImageOps.invert(data)
                 target = ImageOps.invert(target)
@@ -397,7 +420,7 @@ class Invert:
                 target = 255 - target
 
             else:
-                raise Exception('Transform mode not found.')
+                raise Exception("Transform mode not found.")
 
         return data, target
 
@@ -409,13 +432,11 @@ class Brightness:
 
     def __call__(self, data, target):
         if random.random() <= self.p:
-
             if self.mode == "torch":
                 data = ImageEnhance.Brightness(data).enhance(1.5)  # 1 is the original img
                 target = ImageEnhance.Brightness(target).enhance(1.5)
 
             elif self.mode == "cv2":
-
                 """
                 To increase (and default, decrease) you can also add a value to the np.array. Example:
 
@@ -430,7 +451,7 @@ class Brightness:
                 target = cv2.convertScaleAbs(target, alpha=1, beta=1.5)
 
             else:
-                raise Exception('Transform mode not found.')
+                raise Exception("Transform mode not found.")
 
         return data, target
 
@@ -442,7 +463,6 @@ class Contrast:
 
     def __call__(self, data, target):
         if random.random() <= self.p:
-
             if self.mode == "torch":
                 data = ImageEnhance.Contrast(data).enhance(1.5)  # 1 is the original img
                 target = ImageEnhance.Contrast(target).enhance(1.5)
@@ -450,23 +470,24 @@ class Contrast:
             elif self.mode == "cv2":
                 """
                 To increase (and default, decrease) you can also multiply the np.array by a value. Example:
-                
+
                 data = data.astype(float)
                 data *= 1.5
                 data[data > 255] = 255
                 data = data.astype(np.uint8)
-                
+
                 """
                 data = cv2.convertScaleAbs(data, alpha=1.5, beta=0)  # alpha - contrast and beta - brightness
                 target = cv2.convertScaleAbs(target, alpha=1.5, beta=0)
 
             else:
-                raise Exception('Transform mode not found.')
+                raise Exception("Transform mode not found.")
 
         return data, target
 
 
 # added these last minute, so I will work on them over the weekend
+
 
 class Hue:
     def __init__(self):
@@ -509,7 +530,6 @@ class PixelDropout:
 
 
 class ToTensor:
-
     def __call__(self, data, target):
         data = np.array(data)
         target = np.array(target, dtype=np.float32)

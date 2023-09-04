@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 import torchvision
+
 torch.manual_seed(17)  # computers a (pseudo) random, so specifying a seed allows for reproducibility
 
 from tqdm import tqdm  # used to create progress bars for for-loops
@@ -27,9 +28,19 @@ batch_size = 64
 num_epochs = 5
 
 # Load Data
-train_dataset = datasets.CIFAR10(root="./datasets/", train=True, transform=transforms.ToTensor(), download=True)
+train_dataset = datasets.CIFAR10(
+    root="./datasets/",
+    train=True,
+    transform=transforms.ToTensor(),
+    download=True,
+)
 train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-test_dataset = datasets.CIFAR10(root="./datasets/", train=False, transform=transforms.ToTensor(), download=True)
+test_dataset = datasets.CIFAR10(
+    root="./datasets/",
+    train=False,
+    transform=transforms.ToTensor(),
+    download=True,
+)
 test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=True)
 
 
@@ -51,11 +62,8 @@ for param in model.parameters():
 # layers that you add after freezing (and/or the ones you didn't freeze) will be trained
 
 model.avgpool = Identity()  # changes the avgpool layer to one that returns itself
-"Converts entire classifier into a single Linear layer. You could also specify changes to individual " \
-    "layers in the classifier sequence, by indexing the specific layer (eg `model.classifier[0] ...`)"
-model.classifier = nn.Sequential(nn.Linear(512, 100),
-                                 nn.ReLU(),
-                                 nn.Linear(100, 10))
+"Converts entire classifier into a single Linear layer. You could also specify changes to individual " "layers in the classifier sequence, by indexing the specific layer (eg `model.classifier[0] ...`)"
+model.classifier = nn.Sequential(nn.Linear(512, 100), nn.ReLU(), nn.Linear(100, 10))
 model.to(device)
 
 # print(model)
@@ -116,7 +124,8 @@ def check_accuracy(loader: DataLoader, model):
             num_samples += predictions.size(0)
 
         print(
-            f"Got {num_correct} / {num_samples} with accuracy of {float(num_correct) / float(num_samples) * 100:.2f}%")
+            f"Got {num_correct} / {num_samples} with accuracy of {float(num_correct) / float(num_samples) * 100:.2f}%"
+        )
 
     model.train()
 

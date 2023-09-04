@@ -4,36 +4,50 @@ Implementation of a Convolutional Neural Network, using PyTorch
 by Anthony Givans (anthonygivans@miami.edu)
 """
 
-import sys
 import os
+import sys
+
 import torch
 import torch.nn as nn  # neural network modules
-import torch.optim as optim  # used for optimization libraries (SGD, Adam, etc)
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
+import torch.optim as optim  # used for optimization libraries (SGD, Adam, etc)
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
+
 torch.manual_seed(17)  # computers a (pseudo) random, so specifying a seed allows for reproducibility
 
 from tqdm import tqdm  # used to create progress bars for for-loops
 
-file_name = os.path.basename(sys.argv[0]).split('.')[0]
+file_name = os.path.basename(sys.argv[0]).split(".")[0]
 PATH = f"deeplearning/saved_models/{file_name}_model.pt"
 
 
 class CNN(nn.Module):
-
-    def __init__(self, in_channels: int = 1, out_channels: int = 16, num_classes: int = 10) -> None:
+    def __init__(
+        self,
+        in_channels: int = 1,
+        out_channels: int = 16,
+        num_classes: int = 10,
+    ) -> None:
         super(CNN, self).__init__()
 
         self.conv1 = nn.Conv2d(
-            in_channels=in_channels, out_channels=out_channels, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=(3, 3),
+            stride=(1, 1),
+            padding=(1, 1),
         )  # same convolution - the size stays the same (ie, doesn't shrink)
 
         self.pool = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
 
         self.conv2 = nn.Conv2d(
-            in_channels=out_channels, out_channels=16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)
+            in_channels=out_channels,
+            out_channels=16,
+            kernel_size=(3, 3),
+            stride=(1, 1),
+            padding=(1, 1),
         )  # same convolution - the size stays the same (ie, doesn't shrink)
 
         # Fully connected layer w/ 784 values as input, and `num_classes` as output
@@ -46,7 +60,6 @@ class CNN(nn.Module):
         x = self.pool(x)
         x = x.reshape(x.shape[0], -1)
         x = self.fc1(x)
-
         return x
 
 
@@ -88,9 +101,19 @@ num_epochs = 10
 load_model = False
 
 # Load Data
-train_dataset = datasets.MNIST(root="./datasets/", train=True, transform=transforms.ToTensor(), download=True)
+train_dataset = datasets.MNIST(
+    root="./datasets/",
+    train=True,
+    transform=transforms.ToTensor(),
+    download=True,
+)
 train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-test_dataset = datasets.MNIST(root="./datasets/", train=False, transform=transforms.ToTensor(), download=True)
+test_dataset = datasets.MNIST(
+    root="./datasets/",
+    train=False,
+    transform=transforms.ToTensor(),
+    download=True,
+)
 test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=True)
 
 # init network
@@ -126,9 +149,12 @@ for epoch in range(num_epochs):
         optimizer.step()
 
     # saving the model
-    if (epoch == num_epochs-1) and load_model:  # saves the model after the last epoch
+    if (epoch == num_epochs - 1) and load_model:  # saves the model after the last epoch
         print(f"Loss at end: {loss:.2f}\n")
-        checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict()}
+        checkpoint = {
+            "state_dict": model.state_dict(),
+            "optimizer": optimizer.state_dict(),
+        }
         save_checkpoint(checkpoint)
 
 print("Done training, thankfully!\n")

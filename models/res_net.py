@@ -7,21 +7,44 @@ By Anthony Givans (anthonygivans@miami.edu)
 import torch
 import torch.nn as nn
 
+torch.manual_seed(17)
+
 
 class ResNetBlock(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, identity_downsample=None, stride: int = 1):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        identity_downsample=None,
+        stride: int = 1,
+    ):
         super(ResNetBlock, self).__init__()
 
         self.expansion = 4
-        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1,
-                               stride=1, padding=0)
+        self.conv1 = nn.Conv2d(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+        )
         self.batch_norm1 = nn.BatchNorm2d(out_channels)
-        self.conv2 = nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=3,
-                               stride=stride, padding=1)
+        self.conv2 = nn.Conv2d(
+            in_channels=out_channels,
+            out_channels=out_channels,
+            kernel_size=3,
+            stride=stride,
+            padding=1,
+        )
         self.batch_norm2 = nn.BatchNorm2d(out_channels)
-        self.conv3 = nn.Conv2d(in_channels=out_channels, out_channels=out_channels*self.expansion, kernel_size=1,
-                               stride=1, padding=0)
-        self.batch_norm3 = nn.BatchNorm2d(out_channels*self.expansion)
+        self.conv3 = nn.Conv2d(
+            in_channels=out_channels,
+            out_channels=out_channels * self.expansion,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+        )
+        self.batch_norm3 = nn.BatchNorm2d(out_channels * self.expansion)
         self.relu = nn.ReLU()
         self.identity_downsample = identity_downsample
 
@@ -84,14 +107,26 @@ class ResNet(nn.Module):
 
         return x
 
-    def _make_layer(self, ResNetBlock, num_residual_block: int, out_channels: int, stride: int):
+    def _make_layer(
+        self,
+        ResNetBlock,
+        num_residual_block: int,
+        out_channels: int,
+        stride: int,
+    ):
         identity_downsample = None
         layers = []
 
         if stride != 1 or self.in_channels != out_channels * 4:
-            identity_downsample = nn.Sequential(nn.Conv2d(self.in_channels, out_channels*4, kernel_size=1,
-                                                          stride=stride),
-                                                nn.BatchNorm2d(out_channels * 4),)
+            identity_downsample = nn.Sequential(
+                nn.Conv2d(
+                    self.in_channels,
+                    out_channels * 4,
+                    kernel_size=1,
+                    stride=stride,
+                ),
+                nn.BatchNorm2d(out_channels * 4),
+            )
 
         layers.append(ResNetBlock(self.in_channels, out_channels, identity_downsample, stride))
 
@@ -104,15 +139,31 @@ class ResNet(nn.Module):
 
 
 def ResNet50(img_channels: int = 3, num_classes: int = 1000) -> ResNet:
-    return ResNet(ResNetBlock=ResNetBlock, layers=[3, 4, 6, 3], image_channels=img_channels, num_classes=num_classes)
+    return ResNet(
+        ResNetBlock=ResNetBlock,
+        layers=[3, 4, 6, 3],
+        image_channels=img_channels,
+        num_classes=num_classes,
+    )
 
 
 def ResNet101(img_channels: int = 3, num_classes: int = 1000) -> ResNet:
-    return ResNet(ResNetBlock=ResNetBlock, layers=[3, 4, 23, 3], image_channels=img_channels, num_classes=num_classes)
+    return ResNet(
+        ResNetBlock=ResNetBlock,
+        layers=[3, 4, 23, 3],
+        image_channels=img_channels,
+        num_classes=num_classes,
+    )
 
 
 def ResNet152(img_channels: int = 3, num_classes: int = 1000) -> ResNet:
-    return ResNet(ResNetBlock=ResNetBlock, layers=[3, 8, 36, 3], image_channels=img_channels, num_classes=num_classes)
+    return ResNet(
+        ResNetBlock=ResNetBlock,
+        layers=[3, 8, 36, 3],
+        image_channels=img_channels,
+        num_classes=num_classes,
+    )
+
 
 # Testing out
 # def test():

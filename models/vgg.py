@@ -8,10 +8,67 @@ import torch
 import torch.nn as nn  # all the NN modules that we use
 
 VGG_types = {
-    "VGG11": [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
-    "VGG13": [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
-    "VGG16": [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
-    "VGG19": [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M']
+    "VGG11": [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
+    "VGG13": [
+        64,
+        64,
+        "M",
+        128,
+        128,
+        "M",
+        256,
+        256,
+        "M",
+        512,
+        512,
+        "M",
+        512,
+        512,
+        "M",
+    ],
+    "VGG16": [
+        64,
+        64,
+        "M",
+        128,
+        128,
+        "M",
+        256,
+        256,
+        256,
+        "M",
+        512,
+        512,
+        512,
+        "M",
+        512,
+        512,
+        512,
+        "M",
+    ],
+    "VGG19": [
+        64,
+        64,
+        "M",
+        128,
+        128,
+        "M",
+        256,
+        256,
+        256,
+        256,
+        "M",
+        512,
+        512,
+        512,
+        512,
+        "M",
+        512,
+        512,
+        512,
+        512,
+        "M",
+    ],
 }
 
 
@@ -57,11 +114,20 @@ class VGG(nn.Module):
             if isinstance(layer, int):
                 out_channels = layer
 
-                layers.extend([nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=(3, 3),
-                                         stride=(1, 1), padding=(1, 1)),
-                               nn.BatchNorm2d(layer),  # not included in the original paper,
-                               # but included because it improves performance
-                               nn.ReLU()])  # uses extend, because it is going to add each element of the list
+                layers.extend(
+                    [
+                        nn.Conv2d(
+                            in_channels=in_channels,
+                            out_channels=out_channels,
+                            kernel_size=(3, 3),
+                            stride=(1, 1),
+                            padding=(1, 1),
+                        ),
+                        nn.BatchNorm2d(layer),  # not included in the original paper,
+                        # but included because it improves performance
+                        nn.ReLU(),
+                    ]
+                )  # uses extend, because it is going to add each element of the list
                 # individually, instead of as a single object (like that append does)
                 """
                 a = []
@@ -72,7 +138,7 @@ class VGG(nn.Module):
                 >> [[1, 2, 3], 1, 2, 3]
                 """
                 in_channels = layer
-            elif layer == 'M':
+            elif layer == "M":
                 self.max_pool_counter += 1
                 layers.extend([nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))])
 
@@ -80,12 +146,16 @@ class VGG(nn.Module):
 
     def create_fcs_layers(self, length, width):
         fcs_layers = [
-            nn.Linear(512 * int(length / 2 ** self.max_pool_counter) * int(width / 2 ** self.max_pool_counter), 4096),
+            nn.Linear(
+                512 * int(length / 2**self.max_pool_counter) * int(width / 2**self.max_pool_counter),
+                4096,
+            ),
             nn.Dropout(p=0.5),
             nn.Linear(4096, 4096),
             nn.ReLU(),
             nn.Dropout(p=0.5),
-            nn.Linear(4096, self.num_classes)]
+            nn.Linear(4096, self.num_classes),
+        ]
 
         return nn.Sequential(*fcs_layers)  # * unpacks the elements of the lists
 
