@@ -4,3 +4,5 @@
 .idea
 testing
 datasets
+__pycache__
+.vscode

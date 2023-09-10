@@ -6,6 +6,7 @@ By Anthony Givans (anthonygivans@miami.edu)
 
 import torch
 import torch.nn as nn  # all the NN modules that we use
+from torchsummary import summary
 
 VGG_types = {
     "VGG11": [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
@@ -164,3 +165,4 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = VGG("VGG16", in_channels=3, num_classes=1000).to(device)
 x = torch.randn(1, 3, 488, 488).to(device=device)
 print(model(x).shape)
+summary(VGG("VGG16", in_channels=3, num_classes=1000), (3, 488, 488), device="cuda")
