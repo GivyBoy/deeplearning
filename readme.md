@@ -1,4 +1,4 @@
-Hello, world!
+## Hello, world!
 
 I am Anthony, a junior at the University of Miami, who has a keen interest in learning about Computer Vision applications of deep learning, among other things :)
 
