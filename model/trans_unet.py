@@ -288,16 +288,24 @@ class TransUNet(nn.Module):
         return x
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-transunet = TransUNet(
-    img_dim=128, in_channels=3, out_channels=128, head_num=4, mlp_dim=512, block_num=8, patch_dim=16, class_num=1
-).to(device=device)
-print(transunet(torch.randn(1, 3, 128, 128).to(device=device)).shape)
-
-summary(
-    TransUNet(
+if __name__ == "__main__":
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    transunet = TransUNet(
         img_dim=128, in_channels=3, out_channels=128, head_num=4, mlp_dim=512, block_num=8, patch_dim=16, class_num=1
-    ),
-    (3, 128, 128),
-    device="cuda",
-)
+    ).to(device=device)
+    print(transunet(torch.randn(1, 3, 128, 128).to(device=device)).shape)
+
+    summary(
+        TransUNet(
+            img_dim=128,
+            in_channels=3,
+            out_channels=128,
+            head_num=4,
+            mlp_dim=512,
+            block_num=8,
+            patch_dim=16,
+            class_num=1,
+        ),
+        (3, 128, 128),
+        device="cuda",
+    )

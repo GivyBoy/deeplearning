@@ -1,5 +1,6 @@
 """
 Vision Transformer Architecture
+by: Anthony Givans
 """
 
 import torch
@@ -147,8 +148,9 @@ class ViT(nn.Sequential):
         )
 
 
-summary(ViT(), (3, 224, 224), device="cuda")
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = ViT().to(device)
-x = torch.torch.randn(1, 3, 224, 224).to(device=device)
-print(model(x).shape)
+if __name__ == "__main__":
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = ViT().to(device)
+    x = torch.torch.randn(1, 3, 224, 224).to(device=device)
+    print(model(x).shape)
+    summary(ViT(), (3, 224, 224), device="cuda")

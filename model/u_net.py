@@ -6,7 +6,6 @@ by Anthony Givans (anthonygivans@miami.edu)
 
 import torch
 from torch import nn
-import torch.nn.functional as F
 from torchsummary import summary
 
 from utils.main_blocks import UNetConvBlock, UNetEncoder, UNetDecoder
@@ -39,10 +38,11 @@ class UNet(nn.Module):
         return self.output(decoded)
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-test_data = torch.randn(1, 3, 572, 572).to(device=device)
+if __name__ == "__main__":
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    test_data = torch.randn(1, 3, 572, 572).to(device=device)
 
-model = UNet().to(device=device)
-print(f"model output: {model(test_data).shape}")
+    model = UNet().to(device=device)
+    print(f"model output: {model(test_data).shape}")
 
-summary(UNet(), (3, 572, 572), device="cuda")
+    summary(UNet(), (3, 572, 572), device="cuda")
