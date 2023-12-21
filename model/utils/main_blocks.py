@@ -25,7 +25,7 @@ class UNetConvBlock(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.batch_norm1(self.conv1(x))
+        x = self.relu(self.batch_norm1(self.conv1(x)))
         x = self.batch_norm2(self.conv2(x))
         return self.relu(x)
 
@@ -38,7 +38,7 @@ class UNetEncoderBlock(nn.Module):
     def __init__(self, in_channels: int, out_channels: int) -> None:
         super().__init__()
         self.conv = UNetConvBlock(in_channels=in_channels, out_channels=out_channels)
-        self.pool = nn.MaxPool2d((2, 2))
+        self.pool = nn.MaxPool2d((2, 2), stride=2)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv(x)
@@ -54,10 +54,8 @@ class UNetDecoderBlock(nn.Module):
     def __init__(self, in_channels: int, out_channels: int) -> None:
         super().__init__()
 
-        self.up = nn.ConvTranspose2d(
-            in_channels=in_channels, out_channels=out_channels, kernel_size=2, stride=2, padding=0
-        )
-        self.conv = UNetConvBlock(in_channels=out_channels * 2, out_channels=out_channels)
+        self.up = nn.ConvTranspose2d(in_channels=in_channels, out_channels=out_channels, kernel_size=2, stride=2)
+        self.conv = UNetConvBlock(in_channels=in_channels, out_channels=out_channels)
 
     def forward(self, x: torch.Tensor, skip_con: torch.Tensor) -> torch.Tensor:
         x = self.up(x)
@@ -114,3 +112,78 @@ class UNetDecoder(nn.Module):
         d3 = self.d3(d2, skip_connections[1])
         d4 = self.d4(d3, skip_connections[0])
         return d4
+
+
+class SEBlock(nn.Module):
+    """
+    Squeeze and Excitation Block
+    """
+
+    def __init__(self, in_channels: int, reduction: int = 16) -> None:
+        super().__init__()
+
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(in_channels, in_channels // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(in_channels // reduction, in_channels, bias=False),
+            nn.Sigmoid(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        b, c, _, _ = x.size()
+        f = self.avg_pool(x).view(b, c)
+        f = self.fc(f).view(b, c, 1, 1)
+        return x * f
+
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16) -> None:
+        super().__init__()
+
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(in_channels, in_channels // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(in_channels // reduction, in_channels, bias=False),
+        )
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        b, c, _, _ = x.size()
+        avg_pool = self.avg_pool(x).view(b, c)
+        max_pool = self.max_pool(x).view(b, c)
+        return self.sigmoid(self.fc(avg_pool) + self.fc(max_pool)).view(b, c, 1, 1)
+
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size: int = 7) -> None:
+        super().__init__()
+
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=kernel_size // 2, bias=False)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        avg_pool = torch.mean(x, dim=1, keepdim=True)
+        max_pool, _ = torch.max(x, dim=1, keepdim=True)
+        x = torch.cat([avg_pool, max_pool], dim=1)
+        return self.sigmoid(self.conv(x))
+
+
+class CBAM(nn.Module):
+    def __init__(self, in_channels: int, reduction: int = 16) -> None:
+        super().__init__()
+        self.channel_attn = ChannelAttention(in_channels, reduction)
+        self.spatial_attn = SpatialAttention()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.channel_attn(x) * x
+        x = self.spatial_attn(x) * x
+        return x
+
+
+if __name__ == "__main__":
+    x = torch.randn((1, 3, 256, 256))
+    cbam = CBAM(3)
+    print(cbam(x).shape == x.shape)

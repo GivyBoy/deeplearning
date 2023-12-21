@@ -29,7 +29,7 @@ class UNet(nn.Module):
         self.decoder = UNetDecoder(in_channels=1024)
 
         """ Classifier """
-        self.output = nn.Conv2d(64, num_classes, kernel_size=1, padding=0)
+        self.output = nn.Conv2d(64, num_classes, kernel_size=1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         skip_connections, encoded = self.encoder(x)

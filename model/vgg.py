@@ -134,7 +134,6 @@ class VGG(nn.Module):
                 a = []
                 a.append([1, 2, 3])
                 a.extend([1, 2, 3])
-                
                 print(a)
                 >> [[1, 2, 3], 1, 2, 3]
                 """

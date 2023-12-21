@@ -16,3 +16,6 @@ print(conv1d.weight)
 
 conv2d = nn.Conv2d(in_channels=4, out_channels=2, kernel_size=(3, 3), stride=(1, 1))
 print(conv2d.weight)
+
+# pip freeze > requirements.txt # saves all the packages in the current environment to a file called requirements.txt
+# use pip install -r requirements.txt to install all the packages in the file
