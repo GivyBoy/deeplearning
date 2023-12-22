@@ -6,3 +6,5 @@ testing
 datasets
 __pycache__
 .vscode
+tensor_board
+tensorboard

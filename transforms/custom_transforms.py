@@ -217,12 +217,12 @@ class GrayScale:
                 Why does the formula above work? Well, grayscale is just the sum of the average of the RGB channels.
                 The formula, however, gives a weighted average (aka luminosity method) that takes into consideration
                 the contribution of each channel (RGB) to the formation of the image.
-                
-                ``Since red color has more wavelength of all the three colors, and green is the color that has not only 
-                less wavelength then red color but also green is the color that gives more soothing effect to the eyes. 
-                It means that we have to decrease the contribution of red color, and increase the contribution of the 
+
+                ``Since red color has more wavelength of all the three colors, and green is the color that has not only
+                less wavelength then red color but also green is the color that gives more soothing effect to the eyes.
+                It means that we have to decrease the contribution of red color, and increase the contribution of the
                 green color, and put blue color contribution in between these two.``
-                
+
                 This is why the formula (to 3dp) works
                 """
 
