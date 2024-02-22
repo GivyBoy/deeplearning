@@ -174,6 +174,7 @@ class SpatialAttention(nn.Module):
 class CBAM(nn.Module):
     def __init__(self, in_channels: int, reduction: int = 16) -> None:
         super().__init__()
+
         self.channel_attn = ChannelAttention(in_channels, reduction)
         self.spatial_attn = SpatialAttention()
 
@@ -182,6 +183,12 @@ class CBAM(nn.Module):
         x = self.spatial_attn(x) * x
         return x
 
+
+"""
+Create some structure to make it easier to use create blocks.
+Also, add some functionality for residual connections.
+eg., B(3, 3) -> 3x3 conv followed by a 3x3 conv
+"""
 
 if __name__ == "__main__":
     x = torch.randn((1, 3, 256, 256))

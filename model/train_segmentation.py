@@ -153,7 +153,7 @@ if __name__ == "__main__":
     test_img_path = "/mnt/c/Users/givan/Desktop/deeplearning/datasets/segmentation/mitochondria/test/img/"
     test_mask_path = "/mnt/c/Users/givan/Desktop/deeplearning/datasets/segmentation/mitochondria/test/mask/"
 
-    kaggle_img = "/mnt/c/Users/givan/Desktop/deeplearning/datasets/segmentation/kaggle/imgs"
+    kaggle_img = "/mnt/c/Users/givan/Desktop/deeplearning/datasets/segmentation/kaggle/images"
     kaggle_mask = "/mnt/c/Users/givan/Desktop/deeplearning/datasets/segmentation/kaggle/masks"
 
     # Hyper-parameters
@@ -165,16 +165,16 @@ if __name__ == "__main__":
     num_epochs = 10
     val_pct = 0.3  # % of test set that will be used for validation
 
-    train_dataset = MitochondriaDataset(train_img_path, train_mask_path)
-    test_dataset = MitochondriaDataset(test_img_path, test_mask_path)
+    # train_dataset = MitochondriaDataset(train_img_path, train_mask_path)
+    # test_dataset = MitochondriaDataset(test_img_path, test_mask_path)
 
-    # train_dataset = Kaggle(kaggle_img, kaggle_mask)
+    train_dataset = Kaggle(kaggle_img, kaggle_mask)
 
-    # train_dataset, test_dataset = split_data(train_dataset, split_pct=0.2)
+    train_dataset, test_dataset = split_data(train_dataset, split_pct=0.2)
 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    # test_size = int(len(test_dataset) * (1 - val_pct))
-    # test_dataset, val_dataset = torch.utils.data.random_split(test_dataset, [test_size, len(test_dataset) - test_size])
+    test_size = int(len(test_dataset) * (1 - val_pct))
+    test_dataset, val_dataset = torch.utils.data.random_split(test_dataset, [test_size, len(test_dataset) - test_size])
     test_data, val_dataset = split_data(test_dataset, split_pct=val_pct)
     test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
     val_dataloader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=True)
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     ).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
-    loss = DiceLoss()
+    loss = DiceLoss(num_classes=3)
 
     trainer = Trainer(
         train_loader=train_dataloader,

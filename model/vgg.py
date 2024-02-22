@@ -162,6 +162,6 @@ class VGG(nn.Module):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = VGG("VGG16", in_channels=3, num_classes=1000).to(device)
-x = torch.randn(1, 3, 488, 488).to(device=device)
+x = torch.randn(1, 3, 50, 50).to(device=device)
 print(model(x).shape)
 summary(VGG("VGG16", in_channels=3, num_classes=1000), (3, 488, 488), device="cuda")

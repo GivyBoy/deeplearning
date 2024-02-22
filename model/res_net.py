@@ -6,7 +6,9 @@ By Anthony Givans (anthonygivans@miami.edu)
 
 import torch
 import torch.nn as nn
-from ..transforms import custom_transforms
+
+# from ..transforms import custom_transforms
+
 torch.manual_seed(17)
 
 
@@ -138,6 +140,15 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)  # * unpacks the list
 
 
+def ResNet18(img_channels: int = 3, num_classes: int = 1000) -> ResNet:
+    return ResNet(
+        ResNetBlock=ResNetBlock,
+        layers=[2, 2, 2, 2],
+        image_channels=img_channels,
+        num_classes=num_classes,
+    )
+
+
 def ResNet50(img_channels: int = 3, num_classes: int = 1000) -> ResNet:
     return ResNet(
         ResNetBlock=ResNetBlock,
@@ -166,10 +177,11 @@ def ResNet152(img_channels: int = 3, num_classes: int = 1000) -> ResNet:
 
 
 # Testing out
-# def test():
-#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#     x = torch.randn(10, 3, 224, 224).to(device)
-#     model = ResNet152(img_channels=3, num_classes=1000).to(device)
-#     print(model(x).shape)
-#
-# test()
+def test():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    x = torch.randn(10, 3, 50, 50).to(device)
+    model = ResNet18(img_channels=3, num_classes=1000).to(device)
+    print(model(x).shape)
+
+
+test()

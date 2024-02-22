@@ -40,7 +40,9 @@ class PatchEmbedding(nn.Module):
         )
 
         self.cls_token = nn.Parameter(torch.randn(embed_size))
-        self.positions = nn.Parameter(torch.randn(1, num_patches + 1, embed_size))
+        self.positions = nn.Parameter(
+            torch.randn(1, num_patches + 1, embed_size)
+        )  # add 1 to num_patches, because the cls_token will be appended tp the patches
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
