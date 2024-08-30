@@ -141,6 +141,8 @@ class ViT(nn.Module):
         self.norm = nn.LayerNorm(emb_size)
         self.fc = nn.Linear(emb_size, n_classes)
 
+        print(f"num of params: {sum(p.numel() for p in self.parameters()):,}")
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.patch_embed(x)
         for layer in self.layers:

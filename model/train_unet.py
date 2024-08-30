@@ -1,4 +1,5 @@
 """ Train UNet """
+
 import os
 
 import torch
@@ -127,7 +128,7 @@ def get_mitochondria():
 
 
 def get_kaggle(batch_size, val_pct):
-    kaggle_img = "/mnt/c/Users/givan/Desktop/deeplearning/datasets/segmentation/kaggle/imgs"
+    kaggle_img = "/mnt/c/Users/givan/Desktop/deeplearning/datasets/segmentation/kaggle/images"
     kaggle_mask = "/mnt/c/Users/givan/Desktop/deeplearning/datasets/segmentation/kaggle/masks"
     train_dataset = Kaggle(kaggle_img, kaggle_mask)
     train_dataset, test_dataset = split_data(train_dataset, split_pct=0.2)

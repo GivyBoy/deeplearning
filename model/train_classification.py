@@ -49,8 +49,8 @@ class Trainer:
             test_acc.append(epoch_test_acc)
             print(f"Epoch: {epoch} | Train Loss: {epoch_train_loss} | Test Loss: {epoch_test_loss}")
             print(f"Epoch: {epoch} | Train Accuracy: {epoch_train_acc} | Test Accuracy: {epoch_test_acc}")
-        self._plot_losses(train=train_loss, test=test_loss, metric="loss")
-        self._plot_losses(train=train_acc, test=test_acc, metric="accuracy")
+        self._plot_metric(train=train_loss, test=test_loss, metric="loss")
+        self._plot_metric(train=train_acc, test=test_acc, metric="accuracy")
 
     def check_accuracy(self, model) -> None:
         if self.val_loader is None:
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     num_classes = 10
     learning_rate = 1e-3
     batch_size = 64
-    num_epochs = 100
+    num_epochs = 15
     val_pct = 0.3  # % of test set that will be used for validation
 
     # Load Data
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     val_loader = DataLoader(dataset=val_data, batch_size=batch_size, shuffle=True)
 
     # Initialize model
-    model = ViT(in_channels=3, patch_size=4, emb_size=192, img_size=32, depth=6, n_classes=10).to(device)
+    model = ViT(in_channels=3, patch_size=8, emb_size=384, img_size=32, depth=8, n_classes=10).to(device)
 
     # Loss and optimizer
     criterion = nn.CrossEntropyLoss()

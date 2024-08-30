@@ -138,6 +138,8 @@ class UNet(nn.Module):
         """ Classifier """
         self.output = nn.Conv2d(64, num_classes, kernel_size=1)
 
+        print(f"number of params: {sum(p.numel() for p in self.parameters()):,}")
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         skip_connections, encoded = self.encoder(x)
         b = self.b(encoded)

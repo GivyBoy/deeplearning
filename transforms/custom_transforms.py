@@ -70,7 +70,7 @@ class Resize:
 class RandomRotation:
     def __init__(
         self,
-        angles: tuple((int, int)) = (-60, 60),
+        angles: tuple[(int, int)] = (-60, 60),
         p=0.5,
         mode="torch",
         multi_dim=False,
